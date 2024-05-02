@@ -56,5 +56,6 @@ main() {
     install_portainer
     install_nginx_proxy_manager
 }
+
 # 执行主函数
 main
