@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # 函数：更新系统
 update_system() {
     echo "Updating system..."
