@@ -45,7 +45,7 @@ install_portainer() {
 install_nginx_proxy_manager() {
     echo "Installing Nginx Proxy Manager..."
     docker volume create npm_data
-    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data jlesage/nginx-proxy-manager:latest
+    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data jc21/nginx-proxy-manager:latest
 }
 
 # 主函数
