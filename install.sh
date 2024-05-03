@@ -17,44 +17,6 @@ execute_script() {
     ./install.sh
 }
 
-# 函数：显示安装选项并安装所选的软件
-choose_and_install() {
-    local choice=$(zenity --list --width=400 --height=300 --title="选择要安装的软件" --text="请选择要安装的软件：" --column="软件名称" "Docker" "Docker Compose" "Portainer" "Nginx Proxy Manager" "ServerStatus" "MySQL" "WordPress 1" "WordPress 2")
-
-    case "$choice" in
-        "Docker")
-            install_docker
-            ;;
-        "Docker Compose")
-            install_docker_compose
-            ;;
-        "Portainer")
-            install_portainer
-            ;;
-        "Nginx Proxy Manager")
-            install_nginx_proxy_manager
-            ;;
-        "ServerStatus")
-            install_serverstatus
-            ;;
-        "MySQL")
-            local mysql_name=$(zenity --entry --width=400 --height=300 --title="MySQL数据库名称" --text="请输入MySQL数据库的名称：")
-            install_mysql_and_wordpress_user "$mysql_name"
-            ;;
-        "WordPress 1")
-            local wp1_name=$(zenity --entry --width=400 --height=300 --title="WordPress 1 网站名称" --text="请输入 WordPress 1 网站的名称：")
-            install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
-            ;;
-        "WordPress 2")
-            local wp2_name=$(zenity --entry --width=400 --height=300 --title="WordPress 2 网站名称" --text="请输入 WordPress 2 网站的名称：")
-            install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
-            ;;
-        *)
-            echo "未选择任何软件。"
-            ;;
-    esac
-}
-
 # 函数：更新系统
 update_system() {
     echo "正在更新系统..."
@@ -209,6 +171,60 @@ install_wordpress() {
         echo "WordPress 网站 $site_name 安装失败，请检查错误信息。"
         exit 1
     fi
+}
+
+# 函数：显示安装选项并安装所选的软件
+choose_and_install() {
+    echo "请选择要安装的软件："
+    echo "1. Docker"
+    echo "2. Docker Compose"
+    echo "3. Portainer"
+    echo "4. Nginx Proxy Manager"
+    echo "5. ServerStatus"
+    echo "6. MySQL"
+    echo "7. WordPress 1"
+    echo "8. WordPress 2"
+    echo "9. 退出"
+
+    read -p "请输入选项编号: " choice
+
+    case "$choice" in
+        1)
+            install_docker
+            ;;
+        2)
+            install_docker_compose
+            ;;
+        3)
+            install_portainer
+            ;;
+        4)
+            install_nginx_proxy_manager
+            ;;
+        5)
+            install_serverstatus
+            ;;
+        6)
+            local mysql_name=$(zenity --entry --width=400 --height=300 --title="MySQL数据库名称" --text="请输入MySQL数据库的名称：")
+            install_mysql_and_wordpress_user "$mysql_name"
+            ;;
+        7)
+            local wp1_name=$(zenity --entry --width=400 --height=300 --title="WordPress 1 网站名称" --text="请输入 WordPress 1 网站的名称：")
+            install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
+            ;;
+        8)
+            local wp2_name=$(zenity --entry --width=400 --height=300 --title="WordPress 2 网站名称" --text="请输入 WordPress 2 网站的名称：")
+            install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
+            ;;
+        9)
+            echo "退出安装。"
+            exit 0
+            ;;
+        *)
+            echo "无效的选项，请重新选择。"
+            choose_and_install
+            ;;
+    esac
 }
 
 # 主函数
