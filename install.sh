@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# 下载安装脚本
+download_script() {
+    local script_url="https://raw.githubusercontent.com/atianshow/ygmaa/main/install.sh"
+    echo "正在下载安装脚本..."
+    if ! curl -sSfL -o install.sh "$script_url"; then
+        echo "下载安装脚本失败，请检查网络连接或手动下载安装脚本。"
+        exit 1
+    fi
+}
+
+# 执行安装脚本
+execute_script() {
+    echo "正在执行安装脚本..."
+    chmod +x install.sh
+    ./install.sh
+}
+
+# 主函数
+main() {
+    download_script
+    execute_script
+}
+
 # 函数：更新系统
 update_system() {
     echo "正在更新系统..."
