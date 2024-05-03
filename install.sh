@@ -113,12 +113,12 @@ install_mysql_and_wordpress_user() {
     local db_password="WordPressPassword123"
     local root_password="MyStrongPassword123"
     echo "正在安装 MySQL 数据库: $db_name ..."
-    docker volume create "$db_name"_data
+    docker volume create "${db_name}_data"  # 修改成有效的名称
     docker run -d \
         --name "$db_name" \
         -p 3306:3306 \
         -e MYSQL_ROOT_PASSWORD="$root_password" \
-        -v "$db_name"_data:/var/lib/mysql \
+        -v "${db_name}_data":/var/lib/mysql \  # 修改成有效的名称
         mysql:latest
     if [ $? -eq 0 ]; then
         echo "MySQL 数据库 $db_name 安装成功。"
@@ -156,12 +156,12 @@ install_wordpress() {
     local db_user="wordpress_user"
     local db_password="WordPressPassword123"
     echo "正在安装 WordPress 网站: $site_name ..."
-    docker volume create "$site_name"_data
+    docker volume create "${site_name}_data"  # 修改成有效的名称
     docker run -d \
         --name "$site_name" \
         -p "$port":80 \
         --restart=always \
-        -v "$site_name"_data:/var/www/html \
+        -v "${site_name}_data":/var/www/html \  # 修改成有效的名称
         -e WORDPRESS_DB_HOST="$db_host" \
         -e WORDPRESS_DB_NAME="$db_name" \
         -e WORDPRESS_DB_USER="$db_user" \
@@ -177,56 +177,63 @@ install_wordpress() {
 
 # 函数：显示安装选项并安装所选的软件
 choose_and_install() {
-    echo "请选择要安装的软件："
-    echo "1. Docker"
-    echo "2. Docker Compose"
-    echo "3. Portainer"
-    echo "4. Nginx Proxy Manager"
-    echo "5. ServerStatus"
-    echo "6. MySQL"
-    echo "7. WordPress 1"
-    echo "8. WordPress 2"
-    echo "9. 退出"
+    local continue_install="y"
+    while [ "$continue_install" == "y" ]; do
+        echo "请选择要安装的软件："
+        echo "1. Docker"
+        echo "2. Docker Compose"
+        echo "3. Portainer"
+        echo "4. Nginx Proxy Manager"
+        echo "5. ServerStatus"
+        echo "6. MySQL"
+        echo "7. WordPress 1"
+        echo "8. WordPress 2"
+        echo "9. 退出"
 
-    read -p "请输入选项编号: " choice
+        read -p "请输入选项编号: " choice
 
-    case "$choice" in
-        1)
-            install_docker
-            ;;
-        2)
-            install_docker_compose
-            ;;
-        3)
-            install_portainer
-            ;;
-        4)
-            install_nginx_proxy_manager
-            ;;
-        5)
-            install_serverstatus
-            ;;
-        6)
-            local mysql_name=$(zenity --entry --width=400 --height=300 --title="MySQL数据库名称" --text="请输入MySQL数据库的名称：")
-            install_mysql_and_wordpress_user "$mysql_name"
-            ;;
-        7)
-            local wp1_name=$(zenity --entry --width=400 --height=300 --title="WordPress 1 网站名称" --text="请输入 WordPress 1 网站的名称：")
-            install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
-            ;;
-        8)
-            local wp2_name=$(zenity --entry --width=400 --height=300 --title="WordPress 2 网站名称" --text="请输入 WordPress 2 网站的名称：")
-            install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
-            ;;
-        9)
-            echo "退出安装。"
-            exit 0
-            ;;
-        *)
-            echo "无效的选项，请重新选择。"
-            choose_and_install
-            ;;
-    esac
+        case "$choice" in
+            1)
+                install_docker
+                ;;
+            2)
+                install_docker_compose
+                ;;
+            3)
+                install_portainer
+                ;;
+            4)
+                install_nginx_proxy_manager
+                ;;
+            5)
+                install_serverstatus
+                ;;
+            6)
+                local mysql_name
+                read -p "请输入MySQL数据库的名称：" mysql_name
+                install_mysql_and_wordpress_user "$mysql_name"
+                ;;
+            7)
+                local wp1_name
+                read -p "请输入WordPress 1 网站的名称：" wp1_name
+                install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
+                ;;
+            8)
+                local wp2_name
+                read -p "请输入WordPress 2 网站的名称：" wp2_name
+                install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
+                ;;
+            9)
+                echo "退出安装。"
+                exit 0
+                ;;
+            *)
+                echo "无效的选项，请重新选择。"
+                ;;
+        esac
+
+        read -p "是否继续安装其他软件？(y/n): " continue_install
+    done
 }
 
 # 主函数
