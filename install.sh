@@ -163,9 +163,9 @@ install_wordpress() {
     docker volume create "${site_name}_data"  # 修改成有效的名称
     docker run -d \
     --name "$site_name" \
-    -p "$port":80 \  
+    -p "$port":80 \ 
     --restart=always \
-    -v "${site_name}_data":/var/www/html \  
+    -v "${site_name}_data":/var/www/html \
     -e WORDPRESS_DB_HOST="$db_host" \
     -e WORDPRESS_DB_NAME="$db_name" \
     -e WORDPRESS_DB_USER="$db_user" \
