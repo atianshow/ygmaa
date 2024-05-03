@@ -119,7 +119,7 @@ install_mysql_and_wordpress_user() {
         -p 3306:3306 \
         -e MYSQL_ROOT_PASSWORD="$root_password" \
         -v "${db_name}_data":/var/lib/mysql \
-        mysql:5.7  # 修改为特定版本的MySQL镜像
+        mysql:8.0  # 修改为特定版本的MySQL镜像
     if [ $? -eq 0 ]; then
         echo "MySQL 数据库 $db_name 安装成功。"
         # 等待 MySQL 启动
@@ -139,7 +139,7 @@ create_mysql_database_and_user() {
     local db_user="$2"
     local db_password="$3"
     local root_password="$4"
-    docker exec -i "wordpress" mysql -uroot -p"$root_password" << EOF
+    docker exec -i "mysql" mysql -uroot -p"$root_password" << EOF
 CREATE DATABASE $db_name;
 CREATE USER '$db_user'@'%' IDENTIFIED BY '$db_password';
 GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'%';
@@ -158,17 +158,17 @@ install_wordpress() {
     echo "正在安装 WordPress 网站: $site_name ..."
     docker volume create "${site_name}_data"  # 修改成有效的名称
     docker run -d \
-        --name "$site_name" \
-        -p "$port":80 \
-        --restart=always \
-        -v "${site_name}_data":/var/www/html \  
-        -e WORDPRESS_DB_HOST="$db_host" \
-        -e WORDPRESS_DB_NAME="$db_name" \
-        -e WORDPRESS_DB_USER="$db_user" \
-        -e WORDPRESS_DB_PASSWORD="$db_password" \
-        wordpress:latest
+    --name "$site_name" \
+    -p "8001":80 \
+    --restart=always \
+    -v "${site_name}_data":/var/www/html \  
+    -e WORDPRESS_DB_HOST="$db_host" \
+    -e WORDPRESS_DB_NAME="$db_name" \
+    -e WORDPRESS_DB_USER="$db_user" \
+    -e WORDPRESS_DB_PASSWORD="$db_password" \
+    wordpress:latest
     if [ $? -eq 0 ]; then
-        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:$port 进行配置。"
+        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:8001 进行配置。"
     else
         echo "WordPress 网站 $site_name 安装失败，请检查错误信息。"
         exit 1
