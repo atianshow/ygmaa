@@ -118,7 +118,7 @@ install_mysql_and_wordpress_user() {
         --name "$db_name" \
         -e MYSQL_ROOT_PASSWORD="$root_password" \
         -v "${db_name}_data":/var/lib/mysql \
-        mysql:5.7  # 修改为特定版本的MySQL镜像
+        mysql:8.0  # 修改为特定版本的MySQL镜像
     if [ $? -eq 0 ]; then
         echo "MySQL 数据库 $db_name 安装成功。"
         # 等待 MySQL 启动
