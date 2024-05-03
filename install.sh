@@ -108,7 +108,7 @@ install_serverstatus() {
 
 # 函数：安装 MySQL 并创建数据库和用户
 install_mysql_and_wordpress_user() {
-    local db_name="$1"
+    local db_name="wordpress"
     local db_user="wordpress_user"
     local db_password="WordPressPassword123"
     local root_password="MyStrongPassword123"
@@ -149,10 +149,10 @@ EOF
 
 # 函数：安装 WordPress
 install_wordpress() {
-    local site_name="$1"
-    local db_host="$2"
-    local db_name="$3"
-    local port="$4"
+    local site_name="wordpress"
+    local db_host="localhost"
+    local db_name="wordpress"
+    local port="8000"
     local db_user="wordpress_user"
     local db_password="WordPressPassword123"
     echo "正在安装 WordPress 网站: $site_name ..."
@@ -177,8 +177,7 @@ install_wordpress() {
 
 # 函数：显示安装选项并安装所选的软件
 choose_and_install() {
-    local continue_install="y"
-    while [ "$continue_install" == "y" ]; do
+    while true; do
         echo "请选择要安装的软件："
         echo "1. Docker"
         echo "2. Docker Compose"
@@ -186,9 +185,8 @@ choose_and_install() {
         echo "4. Nginx Proxy Manager"
         echo "5. ServerStatus"
         echo "6. MySQL"
-        echo "7. WordPress 1"
-        echo "8. WordPress 2"
-        echo "9. 退出"
+        echo "7. WordPress"
+        echo "8. 退出"
 
         read -p "请输入选项编号: " choice
 
@@ -209,21 +207,12 @@ choose_and_install() {
                 install_serverstatus
                 ;;
             6)
-                local mysql_name
-                read -p "请输入MySQL数据库的名称：" mysql_name
-                install_mysql_and_wordpress_user "$mysql_name"
+                install_mysql_and_wordpress_user
                 ;;
             7)
-                local wp1_name
-                read -p "请输入WordPress 1 网站的名称：" wp1_name
-                install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
+                install_wordpress
                 ;;
             8)
-                local wp2_name
-                read -p "请输入WordPress 2 网站的名称：" wp2_name
-                install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
-                ;;
-            9)
                 echo "退出安装。"
                 exit 0
                 ;;
@@ -232,7 +221,8 @@ choose_and_install() {
                 ;;
         esac
 
-        read -p "是否继续安装其他软件？(y/n): " continue_install
+        echo "已安装的软件："
+        docker ps --format "table {{.Names}}" | tail -n +2
     done
 }
 
