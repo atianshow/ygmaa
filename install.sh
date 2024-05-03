@@ -78,7 +78,7 @@ install_nginx_proxy_manager() {
 install_serverstatus() {
     echo "正在安装 ServerStatus..."
     docker pull cppla/serverstatus
-    docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 80:80 -p 35601:35601 cppla/serverstatus:latest
+    docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 7777:80 -p 35601:35601 cppla/serverstatus:latest
     if [ $? -eq 0 ]; then
         echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
     else
