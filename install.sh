@@ -139,6 +139,11 @@ create_mysql_database_and_user() {
     local db_user="$2"
     local db_password="$3"
     local root_password="$4"
+    
+    # 等待 MySQL 容器启动完成
+    echo "等待 MySQL 容器启动完成..."
+    sleep 30
+    
     docker exec -i "mysql" mysql -uroot -p"$root_password" << EOF
 CREATE DATABASE $db_name;
 CREATE USER '$db_user'@'%' IDENTIFIED BY '$db_password';
@@ -150,16 +155,16 @@ EOF
 # 函数：安装 WordPress
 install_wordpress() {
     local site_name="wordpress"
-    local db_host="localhost"
+    local db_host="$site_name"  # 使用 MySQL 容器的名称作为数据库主机
     local db_name="wordpress"
-    local port="8000"
+    local port="8001"  # 修改为不与其他服务冲突的端口
     local db_user="wordpress_user"
     local db_password="WordPressPassword123"
     echo "正在安装 WordPress 网站: $site_name ..."
     docker volume create "${site_name}_data"  # 修改成有效的名称
     docker run -d \
     --name "$site_name" \
-    -p "8001":80 \
+    -p "$port":80 \  # 修改为正确的端口
     --restart=always \
     -v "${site_name}_data":/var/www/html \  
     -e WORDPRESS_DB_HOST="$db_host" \
@@ -168,7 +173,7 @@ install_wordpress() {
     -e WORDPRESS_DB_PASSWORD="$db_password" \
     wordpress:latest
     if [ $? -eq 0 ]; then
-        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:8001 进行配置。"
+        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:$port 进行配置。"
     else
         echo "WordPress 网站 $site_name 安装失败，请检查错误信息。"
         exit 1
