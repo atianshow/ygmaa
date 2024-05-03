@@ -17,10 +17,42 @@ execute_script() {
     ./install.sh
 }
 
-# 主函数
-main() {
-    download_script
-    execute_script
+# 函数：显示安装选项并安装所选的软件
+choose_and_install() {
+    local choice=$(zenity --list --width=400 --height=300 --title="选择要安装的软件" --text="请选择要安装的软件：" --column="软件名称" "Docker" "Docker Compose" "Portainer" "Nginx Proxy Manager" "ServerStatus" "MySQL" "WordPress 1" "WordPress 2")
+
+    case "$choice" in
+        "Docker")
+            install_docker
+            ;;
+        "Docker Compose")
+            install_docker_compose
+            ;;
+        "Portainer")
+            install_portainer
+            ;;
+        "Nginx Proxy Manager")
+            install_nginx_proxy_manager
+            ;;
+        "ServerStatus")
+            install_serverstatus
+            ;;
+        "MySQL")
+            local mysql_name=$(zenity --entry --width=400 --height=300 --title="MySQL数据库名称" --text="请输入MySQL数据库的名称：")
+            install_mysql_and_wordpress_user "$mysql_name"
+            ;;
+        "WordPress 1")
+            local wp1_name=$(zenity --entry --width=400 --height=300 --title="WordPress 1 网站名称" --text="请输入 WordPress 1 网站的名称：")
+            install_wordpress "$wp1_name" "localhost" "wordpress1" 8001
+            ;;
+        "WordPress 2")
+            local wp2_name=$(zenity --entry --width=400 --height=300 --title="WordPress 2 网站名称" --text="请输入 WordPress 2 网站的名称：")
+            install_wordpress "$wp2_name" "localhost" "wordpress2" 8002
+            ;;
+        *)
+            echo "未选择任何软件。"
+            ;;
+    esac
 }
 
 # 函数：更新系统
@@ -184,34 +216,8 @@ main() {
     # 更新系统
     update_system
 
-    # 安装 Docker
-    install_docker
-
-    # 安装 Docker Compose
-    install_docker_compose
-
-    # 安装 Portainer
-    install_portainer
-
-    # 安装 Nginx Proxy Manager
-    install_nginx_proxy_manager
-
-    # 安装 ServerStatus
-    install_serverstatus
-
-    # 安装 MySQL 并创建数据库和用户
-    install_mysql_and_wordpress_user "wordpress1"
-
-    # 安装第一个 WordPress 网站
-    install_wordpress "wp1" "localhost" "wordpress1" 8001
-
-    # 安装第二个 MySQL 数据库并创建用户
-    install_mysql_and_wordpress_user "wordpress2"
-
-    # 安装第二个 WordPress 网站
-    install_wordpress "wp2" "localhost" "wordpress2" 8002
-
-    # ...
+    # 选择并安装软件
+    choose_and_install
 }
 
 # 执行主函数
