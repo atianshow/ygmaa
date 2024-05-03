@@ -157,10 +157,10 @@ choose_and_install() {
                 install_serverstatus
                 ;;
             6)
-                install_WordPress 1
+                install_WordPress_1
                 ;;
             7)
-                install_WordPress 2
+                install_WordPress_2
                 ;;
             8)
                 echo "退出安装。"
