@@ -109,17 +109,16 @@ install_serverstatus() {
 # 函数：安装 MySQL 并创建数据库和用户
 install_mysql_and_wordpress_user() {
     local db_name="wordpress"  # 默认数据库名称
-    local db_user="wordpress_user"
-    local db_password="WordPressPassword123"
-    local root_password="MyStrongPassword123"
+    local db_user="exampleuser"
+    local db_password="examplepass"
+    local root_password="rootpass"
     echo "正在安装 MySQL 数据库: $db_name ..."
     docker volume create "${db_name}_data"  # 修改成有效的名称
     docker run -d \
         --name "$db_name" \
-        -p 3306:3306 \
         -e MYSQL_ROOT_PASSWORD="$root_password" \
         -v "${db_name}_data":/var/lib/mysql \
-        mysql:8.0  # 修改为特定版本的MySQL镜像
+        mysql:5.7  # 修改为特定版本的MySQL镜像
     if [ $? -eq 0 ]; then
         echo "MySQL 数据库 $db_name 安装成功。"
         # 等待 MySQL 启动
@@ -144,7 +143,7 @@ create_mysql_database_and_user() {
     echo "等待 MySQL 容器启动完成..."
     sleep 30
     
-    docker exec -i "mysql" mysql -uroot -p"$root_password" << EOF
+    docker exec -i "$db_name" mysql -uroot -p"$root_password" << EOF
 CREATE DATABASE $db_name;
 CREATE USER '$db_user'@'%' IDENTIFIED BY '$db_password';
 GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'%';
@@ -154,17 +153,17 @@ EOF
 
 # 函数：安装 WordPress
 install_wordpress() {
-    local site_name="wordpress"
-    local db_host="$site_name"  # 使用 MySQL 容器的名称作为数据库主机
-    local db_name="wordpress"
+    local site_name="wordpress1"
+    local db_host="db1"  # 使用 MySQL 容器的名称作为数据库主机
+    local db_name="wordpress1"
     local port="8001"  # 修改为不与其他服务冲突的端口
-    local db_user="wordpress_user"
-    local db_password="WordPressPassword123"
+    local db_user="exampleuser"
+    local db_password="examplepass"
     echo "正在安装 WordPress 网站: $site_name ..."
     docker volume create "${site_name}_data"  # 修改成有效的名称
     docker run -d \
     --name "$site_name" \
-    -p "$port":80 \  # 修改为正确的端口
+    -p "$port":80 \  
     --restart=always \
     -v "${site_name}_data":/var/www/html \  
     -e WORDPRESS_DB_HOST="$db_host" \
@@ -235,6 +234,12 @@ choose_and_install() {
 main() {
     # 更新系统
     update_system
+
+    # 下载安装脚本
+    download_script
+
+    # 执行安装脚本
+    execute_script
 
     # 选择并安装软件
     choose_and_install
