@@ -114,6 +114,12 @@ install_wordpress1() {
     docker volume create wordpress1_wp
     docker run --restart always -e "[object Object]" -v wordpress1_db:/var/lib/mysql mysql:8.0
     docker run --restart always -p 8001:80 -v wordpress1_wp:/var/www/html wordpress:latest
+        if [ $? -eq 0 ]; then
+        echo "WordPress1 安装成功。访问 http://localhost:8001 查看状态。"
+    else
+        echo "WordPress1 安装失败，请检查错误信息。"
+        exit 1
+    fi
 }
 
 # 函数：安装 WordPress 2
@@ -123,6 +129,12 @@ install_wordpress2() {
     docker volume create wordpress2_wp
     docker run --restart always -e "[object Object]" -v wordpress2_db:/var/lib/mysql mysql:8.0
     docker run --restart always -p 8002:80 -v wordpress2_wp:/var/www/html wordpress:latest
+        if [ $? -eq 0 ]; then
+        echo "WordPress1 安装成功。访问 http://localhost:8002 查看状态。"
+    else
+        echo "WordPress2 安装失败，请检查错误信息。"
+        exit 1
+    fi
 }
 
 # 函数：显示安装选项并安装所选的软件
