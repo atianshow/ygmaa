@@ -1,90 +1,167 @@
 #!/bin/bash
 
-# Function to update system
+# 函数：更新系统
 update_system() {
-    echo "Updating system..."
+    echo "正在更新系统..."
     if [ -x "$(command -v apt-get)" ]; then
-        sudo apt-get update -y
-        sudo apt-get upgrade -y
+        sudo apt-get update && sudo apt-get upgrade -y
     elif [ -x "$(command -v yum)" ]; then
         sudo yum update -y
     elif [ -x "$(command -v dnf)" ]; then
         sudo dnf update -y
     elif [ -x "$(command -v zypper)" ]; then
-        sudo zypper refresh
-        sudo zypper update -y
+        sudo zypper refresh && sudo zypper update -y
     else
-        echo "Unsupported package manager. Update manually."
+        echo "不支持的包管理器，请手动更新。"
         exit 1
     fi
 }
 
-# Function to install Docker
+# 函数：安装 Docker
 install_docker() {
-    echo "Installing Docker..."
+    echo "正在安装 Docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
     sudo usermod -aG docker $USER
-}
-
-# Function to install Docker Compose
-install_docker_compose() {
-    echo "Installing Docker Compose..."
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-}
-
-# Function to install Portainer
-install_portainer() {
-    echo "Installing Portainer..."
-    docker volume create portainer_data
-    docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
-}
-
-# Function to install Nginx Proxy Manager
-install_nginx_proxy_manager() {
-    echo "Installing Nginx Proxy Manager..."
-    docker volume create npm_data
-    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data jlesage/nginx-proxy-manager:latest
-}
-
-# Function to install certbot
-install_certbot() {
-    echo "Installing certbot..."
-    if [ -x "$(command -v apt-get)" ]; then
-        sudo apt-get update -y
-        sudo apt-get install -y certbot
-    elif [ -x "$(command -v yum)" ]; then
-        sudo yum install -y certbot
+    if [ $? -eq 0 ]; then
+        echo "Docker 安装成功。"
     else
-        echo "Unsupported package manager. Install certbot manually."
+        echo "Docker 安装失败，请检查错误信息。"
         exit 1
     fi
 }
 
-# Function to request Let's Encrypt certificate
-request_certificate() {
-    echo "Requesting Let's Encrypt certificate..."
-    sudo certbot certonly --standalone -d example.com -d www.example.com
+# 函数：安装 Docker Compose
+install_docker_compose() {
+    echo "正在安装 Docker Compose..."
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    if [ $? -eq 0 ]; then
+        echo "Docker Compose 安装成功。"
+    else
+        echo "Docker Compose 安装失败，请检查错误信息。"
+        exit 1
+    fi
 }
 
-# Function to install ServerStatus
+# 函数：安装 Portainer
+install_portainer() {
+    echo "正在安装 Portainer..."
+    docker volume create portainer_data
+    docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+    if [ $? -eq 0 ]; then
+        echo "Portainer 安装成功。访问 http://localhost:9000 进行配置。"
+    else
+        echo "Portainer 安装失败，请检查错误信息。"
+        exit 1
+    fi
+}
+
+# 函数：安装 Nginx Proxy Manager
+install_nginx_proxy_manager() {
+    echo "正在安装 Nginx Proxy Manager..."
+    docker volume create npm_data
+    docker run -d -p 80:80 -p 443:443 -p 81:81 --name=npm --restart=always -v npm_data:/data -v ./letsencrypt:/etc/letsencrypt jc21/nginx-proxy-manager:latest
+    if [ $? -eq 0 ]; then
+        echo "Nginx Proxy Manager 安装成功。访问 http://localhost:81 进行配置。"
+    else
+        echo "Nginx Proxy Manager 安装失败，请检查错误信息。"
+        exit 1
+    fi
+}
+
+# 函数：安装 ServerStatus
 install_serverstatus() {
-    echo "Installing ServerStatus..."
-    docker run -d --name=serverstatus -v /etc/ServerStatus:/etc/ServerStatus --net=host --restart=always cppla/serverstatus:server
+    echo "正在安装 ServerStatus..."
+    docker pull cppla/serverstatus
+    docker run -d --restart=always --name=serverstatus -v ~/serverstatus-config.json:/ServerStatus/server/config.json -v ~/serverstatus-monthtraffic:/usr/share/nginx/html/json -p 80:80 -p 35601:35601 cppla/serverstatus:latest
+    if [ $? -eq 0 ]; then
+        echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
+    else
+        echo "ServerStatus 安装失败，请检查错误信息。"
+        exit 1
+    fi
 }
 
-# Main function
+# 函数：安装 MySQL 并创建数据库和用户
+install_mysql_and_wordpress_user() {
+    local db_name="$1"
+    local db_user="wordpress_user"
+    local db_password="WordPressPassword123"
+    local root_password="MyStrongPassword123"
+    echo "正在安装 MySQL 数据库: $db_name ..."
+    docker volume create "$db_name"_data
+    docker run -d \
+        --name "$db_name" \
+        -p 3306:3306 \
+        -e MYSQL_ROOT_PASSWORD="$root_password" \
+        -v "$db_name"_data:/var/lib/mysql \
+        mysql:latest
+    if [ $? -eq 0 ]; then
+        echo "MySQL 数据库 $db_name 安装成功。"
+        # 等待 MySQL 启动
+        sleep 10
+        # 创建数据库和用户
+        docker exec -i "$db_name" mysql -uroot -p"$root_password" << EOF
+CREATE DATABASE $db_name;
+CREATE USER '$db_user'@'%' IDENTIFIED BY '$db_password';
+GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'%';
+FLUSH PRIVILEGES;
+EOF
+        echo "数据库 $db_name 和用户 $db_user 创建成功。"
+    else
+        echo "MySQL 数据库 $db_name 安装失败，请检查错误信息。"
+        exit 1
+    fi
+}
+
+# 函数：安装 WordPress
+install_wordpress() {
+    local site_name="$1"
+    local db_host="$2"
+    local db_name="$3"
+    local db_user="wordpress_user"
+    local db_password="WordPressPassword123"
+    local port="$4"
+    echo "正在安装 WordPress 网站: $site_name ..."
+    docker volume create "$site_name"_data
+    docker run -d \
+        --name "$site_name" \
+        -p "$port":80 \
+        --restart=always \
+        -v "$site_name"_data:/var/www/html \
+        -e WORDPRESS_DB_HOST="$db_host" \
+        -e WORDPRESS_DB_NAME="$db_name" \
+        -e WORDPRESS_DB_USER="$db_user" \
+        -e WORDPRESS_DB_PASSWORD="$db_password" \
+        wordpress:latest
+    if [ $? -eq 0 ]; then
+        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:$port 进行配置。"
+    else
+        echo "WordPress 网站 $site_name 安装失败，请检查错误信息。"
+        exit 1
+    fi
+}
+
+# 主函数
 main() {
-    update_system
-    install_docker
-    install_docker_compose
-    install_portainer
-    install_nginx_proxy_manager
-    install_certbot
-    request_certificate
-    install_serverstatus
+    # ...
+    # 安装第一个 MySQL 数据库并创建用户
+    install_mysql_and_wordpress_user "mysql1"
+
+    # 安装第二个 MySQL 数据库并创建用户
+    install_mysql_and_wordpress_user "mysql2"
+
+    # 安装第一个 WordPress 网站
+    install_wordpress "wp1" "mysql1" "wp1_db" 8001
+
+    # 安装第二个 WordPress 网站
+    install_wordpress "wp2" "mysql2" "wp2_db" 8002
+
+    # ...
 }
 
-# Execute main function
+# ... (之后的函数: install_portainer, install_nginx_proxy_manager, install_serverstatus, main) ...
+
+# 执行主函数
 main
