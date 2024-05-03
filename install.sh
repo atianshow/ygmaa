@@ -112,7 +112,7 @@ install_wordpress1() {
     echo "正在安装 WordPress 网站 wordpress1 ..."
     docker volume create wordpress1_db
     docker volume create wordpress1_wp
-    docker run --restart always -e "[object Object]" -v wordpress1_db:/var/lib/mysql mysql:5.7
+    docker run --restart always -e "[object Object]" -v wordpress1_db:/var/lib/mysql mysql:8.0
     docker run --restart always -p 8001:80 -v wordpress1_wp:/var/www/html wordpress:latest
 }
 
@@ -121,7 +121,7 @@ install_wordpress2() {
     echo "正在安装 WordPress 网站 wordpress2 ..."
     docker volume create wordpress2_db
     docker volume create wordpress2_wp
-    docker run --restart always -e "[object Object]" -v wordpress2_db:/var/lib/mysql mysql:5.7
+    docker run --restart always -e "[object Object]" -v wordpress2_db:/var/lib/mysql mysql:8.0
     docker run --restart always -p 8002:80 -v wordpress2_wp:/var/www/html wordpress:latest
 }
 
