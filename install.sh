@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 清除可能存在的 Windows 换行符
 sed -i 's/\r$//' "$0"
 
 # 下载安装脚本
@@ -106,76 +107,22 @@ install_serverstatus() {
     fi
 }
 
-# 函数：安装 MySQL 并创建数据库和用户
-install_mysql_and_wordpress_user() {
-    local db_name="wordpress"  # 默认数据库名称
-    local db_user="exampleuser"
-    local db_password="examplepass"
-    local root_password="rootpass"
-    echo "正在安装 MySQL 数据库: $db_name ..."
-    docker volume create "${db_name}_data"  # 修改成有效的名称
-    docker run -d \
-        --name "$db_name" \
-        -e MYSQL_ROOT_PASSWORD="$root_password" \
-        -v "${db_name}_data":/var/lib/mysql \
-        mysql:8.0  # 修改为特定版本的MySQL镜像
-    if [ $? -eq 0 ]; then
-        echo "MySQL 数据库 $db_name 安装成功。"
-        # 等待 MySQL 启动
-        sleep 10
-        # 创建数据库和用户
-        create_mysql_database_and_user "$db_name" "$db_user" "$db_password" "$root_password"
-        echo "数据库 $db_name 和用户 $db_user 创建成功。"
-    else
-        echo "MySQL 数据库 $db_name 安装失败，请检查错误信息。"
-        exit 1
-    fi
+# 函数：安装 WordPress 1
+install_wordpress1() {
+    echo "正在安装 WordPress 网站 wordpress1 ..."
+    docker volume create wordpress1_db
+    docker volume create wordpress1_wp
+    docker run --restart always -e "[object Object]" -v wordpress1_db:/var/lib/mysql mysql:5.7
+    docker run --restart always -p 8001:80 -v wordpress1_wp:/var/www/html wordpress:latest
 }
 
-# 函数：创建 MySQL 数据库和用户
-create_mysql_database_and_user() {
-    local db_name="$1"
-    local db_user="$2"
-    local db_password="$3"
-    local root_password="$4"
-    
-    # 等待 MySQL 容器启动完成
-    echo "等待 MySQL 容器启动完成..."
-    sleep 30
-    
-    docker exec -i "$db_name" mysql -uroot -p"$root_password" << EOF
-CREATE DATABASE $db_name;
-CREATE USER '$db_user'@'%' IDENTIFIED BY '$db_password';
-GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'%';
-FLUSH PRIVILEGES;
-EOF
-}
-
-# 函数：安装 WordPress
-install_wordpress() {
-    local site_name="wordpress1"
-    local db_host="db1"  # 使用 MySQL 容器的名称作为数据库主机
-    local db_name="wordpress1"
-    local port="8001"  # 修改为不与其他服务冲突的端口
-    local db_user="exampleuser"
-    local db_password="examplepass"
-    echo "正在安装 WordPress 网站: $site_name ..."
-    docker volume create "${site_name}_data"  # 修改成有效的名称
-    docker run -d \
-    --name "$site_name" \
-    -p "$port":80 \ 
-    -v "${site_name}_data":/var/www/html \
-    -e WORDPRESS_DB_HOST="$db_host" \
-    -e WORDPRESS_DB_NAME="$db_name" \
-    -e WORDPRESS_DB_USER="$db_user" \
-    -e WORDPRESS_DB_PASSWORD="$db_password" \
-    wordpress:latest
-    if [ $? -eq 0 ]; then
-        echo "WordPress 网站 $site_name 安装成功。访问 http://localhost:$port 进行配置。"
-    else
-        echo "WordPress 网站 $site_name 安装失败，请检查错误信息。"
-        exit 1
-    fi
+# 函数：安装 WordPress 2
+install_wordpress2() {
+    echo "正在安装 WordPress 网站 wordpress2 ..."
+    docker volume create wordpress2_db
+    docker volume create wordpress2_wp
+    docker run --restart always -e "[object Object]" -v wordpress2_db:/var/lib/mysql mysql:5.7
+    docker run --restart always -p 8002:80 -v wordpress2_wp:/var/www/html wordpress:latest
 }
 
 # 函数：显示安装选项并安装所选的软件
@@ -187,8 +134,8 @@ choose_and_install() {
         echo "3. Portainer"
         echo "4. Nginx Proxy Manager"
         echo "5. ServerStatus"
-        echo "6. MySQL"
-        echo "7. WordPress"
+        echo "6. WordPress 1"
+        echo "7. WordPress 2"
         echo "8. 退出"
 
         read -p "请输入选项编号: " choice
@@ -210,10 +157,10 @@ choose_and_install() {
                 install_serverstatus
                 ;;
             6)
-                install_mysql_and_wordpress_user
+                install_WordPress_1
                 ;;
             7)
-                install_wordpress
+                install_WordPress_2
                 ;;
             8)
                 echo "退出安装。"
