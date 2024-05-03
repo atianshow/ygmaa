@@ -199,17 +199,17 @@ main() {
     # 安装 ServerStatus
     install_serverstatus
 
-    # 安装第一个 MySQL 数据库并创建用户
-    install_mysql_and_wordpress_user "mysql1"
-
-    # 安装第二个 MySQL 数据库并创建用户
-    install_mysql_and_wordpress_user "mysql2"
+    # 安装 MySQL 并创建数据库和用户
+    install_mysql_and_wordpress_user "wordpress1"
 
     # 安装第一个 WordPress 网站
-    install_wordpress "wp1" "mysql1" "wp1_db" 8001
+    install_wordpress "wp1" "localhost" "wordpress1" 8001
+
+    # 安装第二个 MySQL 数据库并创建用户
+    install_mysql_and_wordpress_user "wordpress2"
 
     # 安装第二个 WordPress 网站
-    install_wordpress "wp2" "mysql2" "wp2_db" 8002
+    install_wordpress "wp2" "localhost" "wordpress2" 8002
 
     # ...
 }
