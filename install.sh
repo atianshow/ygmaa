@@ -117,6 +117,7 @@ install_wordpress1() {
     docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress1 -e MYSQL_USER=wordpress1 -e MYSQL_PASSWORD=password -v wordpress1_db:/var/lib/mysql mysql:8.0
     if [ $? -eq 0 ]; then
         echo "WordPress1 安装成功。访问 http://localhost:8001 查看状态。"
+        exit 0
     else
         echo "WordPress1 安装失败，请检查错误信息。"
         exit 1
@@ -132,6 +133,7 @@ install_wordpress2() {
     docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress2 -e MYSQL_USER=wordpress2 -e MYSQL_PASSWORD=password -v wordpress2_db:/var/lib/mysql mysql:8.0
     if [ $? -eq 0 ]; then
         echo "WordPress2 安装成功。访问 http://localhost:8002 查看状态。"
+        exit 0
     else
         echo "WordPress2 安装失败，请检查错误信息。"
         exit 1
