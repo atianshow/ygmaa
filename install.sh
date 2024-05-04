@@ -35,23 +35,6 @@ update_system() {
     fi
 }
 
-# 函数：更新系统 (改进错误处理)
-update_system() {
-    echo "正在更新系统..."
-    if [ -x "$(command -v apt-get)" ]; then
-        sudo apt-get update && sudo apt-get upgrade -y
-    elif [ -x "$(command -v yum)" ]; then
-        sudo yum update -y
-    elif [ -x "$(command -v dnf)" ]; then
-        sudo dnf update -y
-    elif [ -x "$(command -v zypper)" ]; then
-        sudo zypper refresh && sudo zypper update -y
-    else
-        echo "不支持的包管理器，请手动更新。"
-        return 1 # 返回错误代码，而不是退出
-    fi
-}
-
 # Function to install Docker
 install_docker() {
     echo "Installing Docker..."
@@ -110,62 +93,6 @@ install_serverstatus() {
         echo "ServerStatus 安装成功。访问 http://localhost:7777 查看状态。"
     else
         echo "ServerStatus 安装失败，请检查错误信息。"
-        exit 1
-    fi
-}
-
-# 函数：安装 uptime-kuma
-            docker_name="uptime-kuma"
-            docker_img="louislam/uptime-kuma:latest"
-            docker_port=3003
-            docker_rum="docker run -d \
-                            --name=uptime-kuma \
-                            -p 3003:3001 \
-                            -v /home/docker/uptime-kuma/uptime-kuma-data:/app/data \
-                            --restart=always \
-                            louislam/uptime-kuma:latest"
-            docker_describe="Uptime Kuma 易于使用的自托管监控工具"
-            docker_url="官网介绍: https://github.com/louislam/uptime-kuma"
-            docker_use=""
-            docker_passwd=""
-            docker_app
-            if [ $? -eq 0 ]; then
-        echo "uptime-kuma 安装成功。访问 http://localhost:3001 查看状态。"
-        exit 0
-    else
-        echo "uptime-kuma 安装失败，请检查错误信息。"
-        exit 1
-    fi
-}
-
-# 函数：安装 WordPress 1
-install_wordpress1() {
-    echo "正在安装 WordPress 网站 wordpress1 ..."
-    docker volume create wordpress1_db
-    docker volume create wordpress1_wp
-    docker run --restart always -p 8001:80 -e "WORDPRESS_DB_HOST=db1" -e "WORDPRESS_DB_NAME=wordpress1" -e "WORDPRESS_DB_USER=wordpress1" -e "WORDPRESS_DB_PASSWORD=password" -v wordpress1:/var/www/html wordpress:latest
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress1 -e MYSQL_USER=wordpress1 -e MYSQL_PASSWORD=password -v wordpress1_db:/var/lib/mysql mysql:8.0
-    if [ $? -eq 0 ]; then
-        echo "WordPress1 安装成功。访问 http://localhost:8001 查看状态。"
-        exit 0
-    else
-        echo "WordPress1 安装失败，请检查错误信息。"
-        exit 1
-    fi
-}
-
-# 函数：安装 WordPress 2
-install_wordpress2() {
-    echo "正在安装 WordPress 网站 wordpress2 ..."
-    docker volume create wordpress2_db
-    docker volume create wordpress2_wp
-    docker run --restart always -p 8002:80 -e "WORDPRESS_DB_HOST=db2" -e "WORDPRESS_DB_NAME=wordpress2" -e "WORDPRESS_DB_USER=wordpress2" -e "WORDPRESS_DB_PASSWORD=password" -v wordpress2:/var/www/html wordpress:latest
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress2 -e MYSQL_USER=wordpress2 -e MYSQL_PASSWORD=password -v wordpress2_db:/var/lib/mysql mysql:8.0
-    if [ $? -eq 0 ]; then
-        echo "WordPress2 安装成功。访问 http://localhost:8002 查看状态。"
-        exit 0
-    else
-        echo "WordPress2 安装失败，请检查错误信息。"
         exit 1
     fi
 }
