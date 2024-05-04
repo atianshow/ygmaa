@@ -179,10 +179,7 @@ choose_and_install() {
         echo "3. Portainer"
         echo "4. Nginx Proxy Manager"
         echo "5. ServerStatus"
-        echo "6. uptime-kuma"
-        echo "7. wordpress1"
-        echo "8. wordpress2"
-        echo "9. 退出"
+        echo "6. 退出"
 
         read -p "请输入选项编号: " choice
 
@@ -203,15 +200,6 @@ choose_and_install() {
             install_serverstatus
             ;;
         6)
-            install_wordpress1
-            ;;
-        7)
-            install_wordpress1
-            ;;
-        8)
-            install_wordpress2
-            ;;
-        9)
             echo "退出安装。"
             exit 0
             ;;
