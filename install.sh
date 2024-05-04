@@ -129,7 +129,14 @@ install_serverstatus() {
             docker_use=""
             docker_passwd=""
             docker_app
-              ;;
+            if [ $? -eq 0 ]; then
+        echo "uptime-kuma 安装成功。访问 http://localhost:3001 查看状态。"
+        exit 0
+    else
+        echo "uptime-kuma 安装失败，请检查错误信息。"
+        exit 1
+    fi
+}
 
 # 函数：安装 WordPress 1
 install_wordpress1() {
