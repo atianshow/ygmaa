@@ -203,26 +203,9 @@ main() {
 
     # 执行安装脚本
     execute_script
-
-    # 选择并安装软件 (添加错误处理)
-    while true; do
-        # ... (选择菜单) ...
-
-        case "$choice" in
-            # ... (其他选项) ...
-            *)
-                echo "无效的选项，请重新选择。"
-                ;;
-        esac
-
-        # 检查函数返回值，如果返回非零值则表示出错
-        if [ $? -ne 0 ]; then
-            echo "安装过程中出现错误，请检查错误信息。"
-        fi
-
-        echo "已安装的软件："
-        docker ps --format "table {{.Names}}" | tail -n +2
-    done
+    
+    # 选择并安装软件
+    choose_and_install
 }
 
 # 执行主函数
