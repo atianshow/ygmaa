@@ -1,8 +1,6 @@
 #!/bin/bash
-
 # 清除可能存在的 Windows 换行符
 sed -i 's/\r$//' "$0"
-
 # 下载安装脚本
 download_script() {
     local script_url="https://raw.githubusercontent.com/atianshow/ygmaa/main/install.sh"
