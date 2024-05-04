@@ -120,8 +120,7 @@ install_wordpress1() {
         echo "WordPress1 安装失败，请检查错误信息。"
         exit 1
     fi
-}
-
+    
     docker volume create wordpress1_db
     docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress1 -e MYSQL_USER=wordpress1 -e MYSQL_PASSWORD=password -v wordpress1_db:/var/lib/mysql mysql:8.0
     if [ $? -eq 0 ]; then
@@ -145,7 +144,6 @@ install_wordpress2() {
         echo "WordPress2 安装失败，请检查错误信息。"
         exit 1
     fi
-}
 
     docker volume create wordpress2_db
     docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress2 -e MYSQL_USER=wordpress2 -e MYSQL_PASSWORD=password -v wordpress2_db:/var/lib/mysql mysql:8.0
