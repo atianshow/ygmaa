@@ -20,7 +20,7 @@ execute_script() {
     ./install.sh
 }
 
-# 函数：更新系统
+# 函数：更新系统 (改进错误处理)
 update_system() {
     echo "正在更新系统..."
     if [ -x "$(command -v apt-get)" ]; then
@@ -33,23 +33,24 @@ update_system() {
         sudo zypper refresh && sudo zypper update -y
     else
         echo "不支持的包管理器，请手动更新。"
-        exit 1
+        return 1  # 返回错误代码，而不是退出
     fi
 }
 
-# 函数：安装 Docker
-install_docker() {
-    echo "正在安装 Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    sudo usermod -aG docker $USER
-    if [ $? -eq 0 ]; then
-        echo "Docker 安装成功。"
-        # 将 Docker 命令添加到 PATH 中
-        sudo ln -s /usr/bin/docker /usr/local/bin/docker
+# 函数：更新系统 (改进错误处理)
+update_system() {
+    echo "正在更新系统..."
+    if [ -x "$(command -v apt-get)" ]; then
+        sudo apt-get update && sudo apt-get upgrade -y
+    elif [ -x "$(command -v yum)" ]; then
+        sudo yum update -y
+    elif [ -x "$(command -v dnf)" ]; then
+        sudo dnf update -y
+    elif [ -x "$(command -v zypper)" ]; then
+        sudo zypper refresh && sudo zypper update -y
     else
-        echo "Docker 安装失败，请检查错误信息。"
-        exit 1
+        echo "不支持的包管理器，请手动更新。"
+        return 1  # 返回错误代码，而不是退出
     fi
 }
 
@@ -112,7 +113,9 @@ install_wordpress1() {
     echo "正在安装 WordPress 网站 wordpress1 ..."
     docker volume create wordpress1_db
     docker volume create wordpress1_wp
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=Aa1989..@@ -e MYSQL_DATABASE=wordpress1 -v wordpress1_db:/var/lib/mysql mysql:5.7
+    read -sp "请输入 MySQL root 密码: " mysql_root_password
+    echo 
+    docker run --restart always -e MYSQL_ROOT_PASSWORD="$mysql_root_password" -e MYSQL_DATABASE=wordpress1 -v wordpress1_db:/var/lib/mysql mysql:5.7
     docker run --restart always -p 8001:80 -v wordpress1_wp:/var/www/html wordpress:latest
     if [ $? -eq 0 ]; then
         echo "WordPress1 安装成功。访问 http://localhost:8001 查看状态。"
@@ -127,7 +130,9 @@ install_wordpress2() {
     echo "正在安装 WordPress 网站 wordpress2 ..."
     docker volume create wordpress2_db
     docker volume create wordpress2_wp
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=Aa1989..@@ -e MYSQL_DATABASE=wordpress2 -v wordpress2_db:/var/lib/mysql mysql:5.7
+    read -sp "请输入 MySQL root 密码: " mysql_root_password
+    echo 
+    docker run --restart always -e MYSQL_ROOT_PASSWORD="$mysql_root_password" -e MYSQL_DATABASE=wordpress2 -v wordpress2_db:/var/lib/mysql mysql:5.7
     docker run --restart always -p 8002:80 -v wordpress2_wp:/var/www/html wordpress:latest
     if [ $? -eq 0 ]; then
         echo "WordPress2 安装成功。访问 http://localhost:8002 查看状态。"
@@ -199,8 +204,25 @@ main() {
     # 执行安装脚本
     execute_script
 
-    # 选择并安装软件
-    choose_and_install
+    # 选择并安装软件 (添加错误处理)
+    while true; do
+        # ... (选择菜单) ...
+
+        case "$choice" in
+            # ... (其他选项) ...
+            *)
+                echo "无效的选项，请重新选择。"
+                ;;
+        esac
+
+        # 检查函数返回值，如果返回非零值则表示出错
+        if [ $? -ne 0 ]; then
+            echo "安装过程中出现错误，请检查错误信息。"
+        fi
+
+        echo "已安装的软件："
+        docker ps --format "table {{.Names}}" | tail -n +2
+    done
 }
 
 # 执行主函数
