@@ -111,10 +111,10 @@ install_serverstatus() {
 # 函数：安装 WordPress 1
 install_wordpress1() {
     echo "正在安装 WordPress 网站 wordpress1 ..."
-    docker volume create wordpress1_db
     docker volume create wordpress1_wp
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress1 -e MYSQL_USER=wordpress1 -e MYSQL_PASSWORD=password -v wordpress1_db:/var/lib/mysql mysql:8.0
+    docker volume create wordpress1_db
     docker run --restart always -p 8001:80 -v wordpress1_wp:/var/www/html wordpress:latest
+    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress1 -e MYSQL_USER=wordpress1 -e MYSQL_PASSWORD=password -v wordpress1_db:/var/lib/mysql mysql:8.0
     if [ $? -eq 0 ]; then
         echo "WordPress1 安装成功。访问 http://localhost:8001 查看状态。"
     else
@@ -126,10 +126,10 @@ install_wordpress1() {
 # 函数：安装 WordPress 2
 install_wordpress2() {
     echo "正在安装 WordPress 网站 wordpress2 ..."
-    docker volume create wordpress2_db
     docker volume create wordpress2_wp
-    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress2 -e MYSQL_USER=wordpress2 -e MYSQL_PASSWORD=password -v wordpress2_db:/var/lib/mysql mysql:8.0
+    docker volume create wordpress2_db
     docker run --restart always -p 8002:80 -v wordpress2_wp:/var/www/html wordpress:latest
+    docker run --restart always -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=wordpress2 -e MYSQL_USER=wordpress2 -e MYSQL_PASSWORD=password -v wordpress2_db:/var/lib/mysql mysql:8.0
     if [ $? -eq 0 ]; then
         echo "WordPress2 安装成功。访问 http://localhost:8002 查看状态。"
     else
